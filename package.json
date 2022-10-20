@@ -1,0 +1,23 @@
+{
+  "name": "farm",
+  "version": "1.0.0",
+  "description": "firing the bullet named node.js",
+  "main": "index.js",
+  "scripts": {
+    "start:dev": "nodemon server.js",
+    "start:prod": "NODE_ENV=production nodemon server.js"
+  },
+  "author": "Mehul Patel",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "mongoose": "^6.6.5",
+    "morgan": "^1.10.0",
+    "slugify": "^1.6.5",
+    "superagent": "^8.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
