@@ -6,7 +6,9 @@ const tourSchema = new mongoose.Schema({
       type: String,
       required: [true, 'tour must have name'],
       unique: true,
-      trim: true
+      trim: true,
+      minlength: [10, 'minimum length of tour name should be 10 character'],
+      maxlength: [40, 'maximum length of tour name should be 40 character']
     },
     slug: String,
     duration: {
@@ -19,11 +21,17 @@ const tourSchema = new mongoose.Schema({
     },
     difficulty: {
       type: String,
-      required: [true, 'A tour must have difficulty']
+      required: [true, 'A tour must have difficulty'],
+      enum: {
+        values: ['easy', 'medium', 'difficult'],
+        message: "difficulty value does not match the enum values"
+      }
     },
     ratingAverage: {
       type: Number,
-      default: 4.8
+      default: 4.8,
+      min: [1, 'rating should be above 1.0'],
+      max: [5, 'rating must be below 5.0']
     },
     ratingQuantity: {
       type: Number,
@@ -33,7 +41,15 @@ const tourSchema = new mongoose.Schema({
       type: Number,
       required: [true, 'tour must have price']
     },
-    priceDiscout: Number,
+    priceDiscount: {
+      type: Number,
+      validate: {
+        validator: function(val) {
+          return val < this.price
+        },
+        message: "discount price ({VALUE}) has to be less than price"
+      }
+    },
     summary: {
       type: String,
       trim: true,
@@ -52,7 +68,11 @@ const tourSchema = new mongoose.Schema({
       default: Date.now(),
       select: false
     },
-    startDates: [Date]
+    startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false
+    }
   },{
     toJSON: {virtuals :true},
     toObject: {virtuals: true}
@@ -76,6 +96,25 @@ const tourSchema = new mongoose.Schema({
 
   tourSchema.post('save', function (doc, next) {
     console.log(doc)
+    next()
+  })
+
+  // query middleware
+  tourSchema.pre(/^find/g, function(next) {
+    this.find({secretTour: {$ne : true}})
+    this.start = new Date()
+    next();
+  })
+  tourSchema.post(/^find/g, function(doc, next) {
+    console.log(`query took : ${Date.now() - this.start} in milliseconds`)
+    console.log(doc);
+    next()
+  })
+
+  // aggregate middleware
+  tourSchema.pre('aggregate', function(next) {
+    this.pipeline().unshift({$match : {secretTour : {$ne: true}}}),
+    console.log(this.pipeline())
     next()
   })
 

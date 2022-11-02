@@ -1,14 +1,17 @@
 const express = require("express");
+const morgan = require("morgan");
+
+// router imports
 const tourRouter = require("./routes/toursRoutes");
 const usersRouter = require("./routes/usersRoutes");
-const morgan = require("morgan");
 
 const app = express();
 
-// middleware starts here
+// middleware for development environmnet 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
 app.use(express.json());
 // app.use(express.static("./4-natours/starter/public"));
 

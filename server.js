@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 
 dotenv.config({ path: "./config.env" });
 
+// for mongodb atlas service
 const DB = process.env.DATABASE.replace('<password>', process.env.DATABASE_PASSWORD)
 
 mongoose.connect(
@@ -10,7 +11,7 @@ mongoose.connect(
   process.env.DATABASE_LOCAL, {
 }).then(con => {
   // console.log(con.connections);
-  console.log("db connected !!!!!")
+  console.log("database connected")
 })
 
 const app = require("./app");

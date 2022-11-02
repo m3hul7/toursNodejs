@@ -77,6 +77,7 @@ exports.gettours = async (req, res) => {
 exports.gettourbyid = async (req, res) => {
   try {
     const specificTour = await Tour.findById(req.params.id)
+    // Tour.findOne({_id:  req.params.id})
     res.status(200).json({
       status: "success",
       data: {
@@ -150,9 +151,9 @@ exports.deletetour = async (req, res) => {
 exports.getToursStats = async (req, res) => {
   try {
     const stats =  Tour.aggregate([
-      {
-        $match: { price: { $gte: 500 } }
-      },
+      // {
+      //   $match: { price: { $gte: 500 } }
+      // },
       {
         $group: {
           _id: { $toUpper: '$difficulty'},
@@ -169,11 +170,11 @@ exports.getToursStats = async (req, res) => {
           minPrice : -1
         }
       },
-      {
-        $match: {
-          _id: { $ne : "EASY" }
-        }
-      }
+      // {
+      //   $match: {
+      //     _id: { $ee : "EASY" }
+      //   }
+      // }
     ])
 
     const statsdata = await stats
