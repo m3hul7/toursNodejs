@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "nodemon server.js",
-    "start:prod": "NODE_ENV=production nodemon server.js"
+    "start:prod": "NODE_ENV=production nodemon server.js",
+    "debug": "ndb server.js"
   },
   "author": "Mehul Patel",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "express": "^4.18.1",
     "mongoose": "^6.6.5",
     "morgan": "^1.10.0",
+    "ndb": "^1.1.5",
     "slugify": "^1.6.5",
     "superagent": "^8.0.0"
   },
