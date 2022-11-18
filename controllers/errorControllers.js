@@ -15,6 +15,14 @@ const handleValidationErrorDB = err => {
   return new AppError(message, 400)
 }
 
+const handleJsonWebTokenError = () => {
+  return new AppError('token has been modified', 401)
+}
+const handleTokenExpiredError = () => {
+  return new AppError('token has expired', 401)
+}
+
+
 const sendErrorsDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -54,6 +62,8 @@ module.exports = (err, req, res, next) => {
       if(err.name === 'CastError') error = handleCastErrorDB(error) 
       if(err.code === 11000) error = duplicateFieldValueErrorDB(error)
       if(err.name === 'ValidationError') error = handleValidationErrorDB(error)
+      if(err.name === 'JsonWebTokenError') error = handleJsonWebTokenError()
+      if(err.name === 'TokenExpiredError') error = handleTokenExpiredError()
       sendErrorProd(error, res)
     }
   }

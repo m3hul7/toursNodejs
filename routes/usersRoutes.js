@@ -1,8 +1,16 @@
 const express = require("express");
 
 const userController = require("./../controllers/usersControllers");
+const authController = require("./../controllers/authControllers");
 
 const router = express.Router();
+
+router.post('/sign-up', authController.signup)
+router.post('/log-in', authController.login)
+
+router.post('/fortget-password', authController.forgetPassword)
+router.patch('/reset-password/:token', authController.resetPassword)
+router.patch('/update-password/',authController.protect ,authController.updatePassword)
 
 // router which does not include query params
 router.route("/").get(userController.getusers).get(userController.postuser);

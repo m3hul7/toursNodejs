@@ -95,7 +95,7 @@ const tourSchema = new mongoose.Schema({
   })
 
   tourSchema.post('save', function (doc, next) {
-    console.log(doc)
+    // console.log(doc)
     next()
   })
 
@@ -107,7 +107,7 @@ const tourSchema = new mongoose.Schema({
   })
   tourSchema.post(/^find/g, function(doc, next) {
     console.log(`query took : ${Date.now() - this.start} in milliseconds`)
-    console.log(doc);
+    // console.log(doc);
     next()
   })
 
