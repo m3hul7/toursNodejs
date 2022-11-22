@@ -5,7 +5,6 @@ const catchAsync = require("../utils/catchAsync")
 const { promisify } = require("util")
 const sendEmail = require("./../utils/email")
 const crypto = require("crypto")
-const { urlencoded } = require("express")
 
 const signToken = id => {
     return jwt.sign({id}, process.env.JWT_SECRET, {
@@ -13,11 +12,23 @@ const signToken = id => {
     })
 }
 
+const cookieOptions = {
+    expiresIn: new Date( Date.now() + process.env.JWT_COOKIE_EXP * 24 * 60 * 60 * 1000),
+    httpOnly: true
+}
+
 const sendTokenandResponse = (user, statusCode, res) => {
     const token = signToken(user.id)
+
+    if(process.env.NODE_ENV === 'production') cookieOptions.secure = true
+    res.cookie('jwt', token, cookieOptions)
+
+    user.password = undefined
+
     res.status(statusCode).json({
         status: 'success',
-        token
+        token,
+        user
     })
 }
 
@@ -79,7 +90,7 @@ exports.protect = catchAsync( async (req, res, next) => {
 
     // 5> storing the currentUser in req
     req.user = currentUser
-    console.log(req.user)
+    console.log(`currently logged in user is 😎 ${req.user.name}`)
     next()
 })
 

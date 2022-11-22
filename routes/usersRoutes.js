@@ -12,6 +12,9 @@ router.post('/fortget-password', authController.forgetPassword)
 router.patch('/reset-password/:token', authController.resetPassword)
 router.patch('/update-password/',authController.protect ,authController.updatePassword)
 
+router.patch('/update-me', authController.protect, userController.updateMe)
+router.delete('/delete-me', authController.protect, userController.deleteMe)
+
 // router which does not include query params
 router.route("/").get(userController.getusers).get(userController.postuser);
 

@@ -1,9 +1,53 @@
-exports.getusers = (req, res) => {
-  res.status(500).json({
-    status: "fail",
-    message: "yet to be implemented",
+const AppError = require("../utils/appError")
+const User = require("../models/userModel")
+const catchAsync = require("../utils/catchAsync")
+
+const filterBody = (obj, ...fields) => {
+  const newObj = {};
+  Object.keys(obj).forEach(el => {
+    if(fields.includes(el)) {
+      newObj[el] = obj[[el]]
+    }
+  })
+  return newObj;
+}
+exports.updateMe = catchAsync(async (req, res, next) => {
+   
+  // 1> if user enterd password or passwordConfirm which should not be allowed 
+  if(req.body.password || req.body.passwordConfirm){
+    return next(new AppError('this route is not for password updation', 400))
+  }
+  let filteredObj;
+  if(req.body.role != 'admin' && req.body.role != 'lead-guide'){
+    filteredObj = filterBody( req.body, 'name', 'email', 'role')
+  } else {
+    filteredObj = filterBody( req.body, 'name', 'email')
+  }
+  const update = await User.findByIdAndUpdate(req.user.id, filteredObj, {runValidators: true, new: true})
+
+  res.status(200).json({
+    status: 'success',
+    update
+  })
+
+})
+
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(req.user.id, { active: false })
+  res.status(204).json({
+    status: 'success',
+    user
+  })
+})
+
+exports.getusers = catchAsync(async (req, res) => {
+  const result = await User.find()
+  
+  res.status(200).json({
+    status: "success",
+    result
   });
-};
+});
 exports.postuser = (req, res) => {
   res.status(500).json({
     status: "fail",
