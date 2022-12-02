@@ -5,24 +5,67 @@ const authController = require("./../controllers/authControllers");
 
 const router = express.Router();
 
-router.post('/sign-up', authController.signup)
-router.post('/log-in', authController.login)
+router
+  .post(
+    '/sign-up',
+    authController.signup
+  )
+router
+  .post(
+    '/log-in',
+    authController.login
+  )
 
-router.post('/fortget-password', authController.forgetPassword)
-router.patch('/reset-password/:token', authController.resetPassword)
-router.patch('/update-password/',authController.protect ,authController.updatePassword)
+router
+  .post(
+    '/fortget-password',
+    authController.forgetPassword
+  )
+router
+  .patch(
+    '/reset-password/:token',
+    authController.resetPassword
+  )
 
-router.patch('/update-me', authController.protect, userController.updateMe)
-router.delete('/delete-me', authController.protect, userController.deleteMe)
+router.use(authController.protect)
 
-// router which does not include query params
-router.route("/").get(userController.getusers).get(userController.postuser);
+router
+  .patch(
+    '/update-password/',
+    authController.updatePassword
+  )
 
-// router which does include query params
+router
+    .get(
+      '/get-me',
+      userController.getMe,
+      userController.getUser
+    )
+
+router
+  .patch(
+    '/update-me',
+    userController.updateMe
+  )
+
+router
+  .delete(
+    '/delete-me',
+    userController.deleteMe
+  )
+
+router.use(authController.restrictTo('admin'))
+
+router
+  .route("/")
+  .get(userController.getAllUser)
+  .get(userController.createUser)
+
+
 router
   .route("/:id")
-  .get(userController.gettuserbyid)
-  .get(userController.updateuser)
-  .get(userController.deleteuser);
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser)
 
-module.exports = router;
+module.exports = router

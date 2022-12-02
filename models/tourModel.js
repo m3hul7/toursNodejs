@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 const slugify = require("slugify")
+// const User = require("../models/userModel")
 
 const tourSchema = new mongoose.Schema({
     name: {
@@ -72,15 +73,55 @@ const tourSchema = new mongoose.Schema({
     secretTour: {
       type: Boolean,
       default: false
-    }
+    },
+    startLocation: {
+      // GeoJSON
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point']
+      },
+      coordinates: [Number],
+      address: String,
+      description: String
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day:Number
+      }
+    ],
+    guides: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User'
+      }
+    ]
   },{
     toJSON: {virtuals :true},
     toObject: {virtuals: true}
   })
-  
+
+  // tourSchema.index({ price: 1})
+  tourSchema.index({ price: 1, ratingAverage: -1})
+  tourSchema.index({ slug: 1 })
+
   // Virtual Properties
   tourSchema.virtual('durationinweek').get(function (){
     return this.duration / 7;
+  })
+
+  tourSchema.virtual('reviews', {
+    ref:'Review',
+    foreignField: 'tour',
+    localField: '_id'
   })
 
   // document middleware
@@ -89,10 +130,11 @@ const tourSchema = new mongoose.Schema({
     next()
   })
 
-  tourSchema.pre('save', function (next) {
-    console.log("saving")
-    next()
-  })
+  // tourSchema.pre('save', async function (next) {
+  //   this.guidesPromises = this.guides.map(async id => await User.findById(id))
+  //   this.guides = await Promise.all(this.guidesPromises)
+  //   next()
+  // })
 
   tourSchema.post('save', function (doc, next) {
     // console.log(doc)
@@ -105,6 +147,15 @@ const tourSchema = new mongoose.Schema({
     this.start = new Date()
     next();
   })
+
+  tourSchema.pre(/^find/, function (next) {
+    this.populate({
+      path: 'guides',
+      select: '-__v -passwordChangedAt',
+    })
+    next()
+  })
+
   tourSchema.post(/^find/g, function(doc, next) {
     console.log(`query took : ${Date.now() - this.start} in milliseconds`)
     // console.log(doc);

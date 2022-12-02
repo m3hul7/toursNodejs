@@ -11,13 +11,14 @@ const globalErrorHandler = require("./controllers/errorControllers")
 // router imports
 const tourRouter = require("./routes/toursRoutes");
 const usersRouter = require("./routes/usersRoutes");
+const reviewRouter = require("./routes/reviewRoutes")
 
 const app = express();
 
 // middleware for security 
 app.use(helmet())
 
-// middleware for development environmnet 
+// middleware for logging in development environmnet 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -30,8 +31,7 @@ const limiter = rateLimiter({
 })
 app.use('/api', limiter)
 
-// express mongo sanitize for nosql injection
-app.use(mongoSanitize())
+
 
 // prevent params pollution
 app.use(hpp({
@@ -48,6 +48,8 @@ app.use(hpp({
 // parser of body to req body
 app.use(express.json( {limit: '10kb'} ));
 
+// express mongo sanitize for nosql injection
+app.use(mongoSanitize())
 // xss sanitizer
 app.use(xss())
 
@@ -68,6 +70,7 @@ app.use((req, res, next) => {
 
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", usersRouter);
+app.use("/api/v1/reviews", reviewRouter)
 
 app.all("*", (req, res, next) => {
   // const err = new Error(`Cannot find URL 😭 ${req.originalUrl} on this server !`)

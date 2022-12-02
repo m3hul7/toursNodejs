@@ -1,6 +1,9 @@
-const AppError = require("../utils/appError")
 const User = require("../models/userModel")
+
+const AppError = require("../utils/appError")
 const catchAsync = require("../utils/catchAsync")
+
+const handlerFactory = require("./../controllers/handlerFactory")
 
 const filterBody = (obj, ...fields) => {
   const newObj = {};
@@ -11,6 +14,12 @@ const filterBody = (obj, ...fields) => {
   })
   return newObj;
 }
+
+exports.getMe = (req, res, next) => {
+  req.params.id= req.user.id
+  next()
+}
+
 exports.updateMe = catchAsync(async (req, res, next) => {
    
   // 1> if user enterd password or passwordConfirm which should not be allowed 
@@ -40,35 +49,14 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   })
 })
 
-exports.getusers = catchAsync(async (req, res) => {
-  const result = await User.find()
-  
-  res.status(200).json({
-    status: "success",
-    result
-  });
-});
-exports.postuser = (req, res) => {
+exports.createUser = (req, res) => {
   res.status(500).json({
     status: "fail",
-    message: "yet to be implemented",
-  });
-};
-exports.gettuserbyid = (req, res) => {
-  res.status(500).json({
-    status: "fail",
-    message: "yet to be implemented",
-  });
-};
-exports.updateuser = (req, res) => {
-  res.status(500).json({
-    status: "fail",
-    message: "yet to be implemented",
-  });
-};
-exports.deleteuser = (req, res) => {
-  res.status(500).json({
-    status: "fail",
-    message: "yet to be implemented",
-  });
-};
+    message: "Please use sign up to create new user",
+  })
+}
+
+exports.getAllUser = handlerFactory.getAll(User)
+exports.getUser = handlerFactory.getOne(User)
+exports.updateUser = handlerFactory.updateOne(User) // do not try to update password
+exports.deleteUser = handlerFactory.deleteOne(User)
