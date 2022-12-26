@@ -15,6 +15,11 @@ router
     '/log-in',
     authController.login
   )
+router
+  .get(
+    '/log-out',
+    authController.logout
+  )
 
 router
   .post(

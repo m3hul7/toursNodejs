@@ -23,36 +23,62 @@ const handleTokenExpiredError = () => {
 }
 
 
-const sendErrorsDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack
-  })
-}
-const sendErrorProd = (err, res) => {
-  // trusted error can be shown here
-  if(err.isOperational) {
-    res.status(err.statusCode).json({
+const sendErrorsDev = (err, req, res) => {
+  if(req.originalUrl.startsWith('/api')) {
+    return res.status(err.statusCode).json({
       status: err.status,
-      message: err.message
+      error: err,
+      message: err.message,
+      stack: err.stack
+    })
+  } else {
+    return res.status(err.statusCode).render('error', {
+      title: 'Something went wrong!',
+      msg: err.message
     })
   }
-  // for non truested errors like app errors dependency errors or programming error
-  else {
-    // console.log('Error: 🔥 ', err)
-    res.status(500).json({
-      status: 'error',
-      message: 'something went wrong'
-    })
+}
+const sendErrorProd = (err, req, res) => {
+  if(req.originalUrl.startsWith('/api')) {
+    // trusted error can be shown here
+    if(err.isOperational) {
+      return res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message
+      })
+    }
+    // for non truested errors like app errors dependency errors or programming error
+    else {
+      // console.log('Error: 🔥 ', err)
+      return res.status(500).json({
+        status: 'error',
+        message: 'something went wrong'
+      })
+    }
+  } else {
+    // trusted error can be shown here
+    if(err.isOperational) {
+      return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: err.message
+      })
+    }
+    // for non truested errors like app errors dependency errors or programming error
+    else {
+      // console.log('Error: 🔥 ', err)
+      return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: "Please try again later!"
+      })
+    }
   }
+  
 }
 module.exports = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || "error"
     if(process.env.NODE_ENV == 'development'){
-      sendErrorsDev(err, res)
+      sendErrorsDev(err,req, res)
       
     }
     else if(process.env.NODE_ENV == 'production'){
@@ -64,6 +90,6 @@ module.exports = (err, req, res, next) => {
       if(err.name === 'ValidationError') error = handleValidationErrorDB(error)
       if(err.name === 'JsonWebTokenError') error = handleJsonWebTokenError()
       if(err.name === 'TokenExpiredError') error = handleTokenExpiredError()
-      sendErrorProd(error, res)
+      sendErrorProd(error, req, res)
     }
   }

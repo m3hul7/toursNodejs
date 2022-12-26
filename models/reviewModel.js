@@ -2,20 +2,20 @@ const mongoose = require('mongoose')
 const Tour = require("./../models/tourModel")
 
 reviewSchema = new mongoose.Schema({
-    review : {
+    review: {
         type: String,
         required: [true, 'review field is required']
     },
-    rating : {
+    rating: {
         type: Number,
         min: 1,
         max: 5
     },
-    createdAt : {
+    createdAt: {
         type: Date,
         default: Date.now()
     },
-    tour : {
+    tour: {
         type: mongoose.Schema.ObjectId,
         ref: 'Tour',
         required: [true, 'review must belong to tour']
@@ -27,62 +27,60 @@ reviewSchema = new mongoose.Schema({
         required: [true, 'review must belong to user']
     }
 },
-{
-    toJSON: { virtuals: true},
-    toObject: { virtuals: true}
-}
+    {
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
+    }
 );
 
 reviewSchema.index({ tour : 1, user: 1}, { unique: true})
 
-reviewSchema.statics.calculateAvgRating = async function(tourId) {
+reviewSchema.statics.calculateAvgRating = async function (tourId) {
     const stats = await this.aggregate([
         {
-            $match : {tour: tourId}
+            $match: { tour: tourId }
         },
         {
-            $group : {
+            $group: {
                 _id: '$tour',
-                nRating: { $sum : 1},
-                avgRating: { $avg: '$rating'}
+                nRating: { $sum: 1 },
+                avgRating: { $avg: '$rating' }
             }
         }
     ])
     await Tour.findByIdAndUpdate(tourId, {
-        ratingAverage: stats.avgRating,
-        ratingQuantity: stats.nRating
+        ratingAverage: stats[0].avgRating,
+        ratingQuantity: stats[0].nRating
     })
-    console.log(stats)
+    console.log(stats[0].avgRating)
 }
 
-reviewSchema.post('save', function() {
-    this.constructor.calculateAvgRating(this.tour)
+// calculating average rating on update and delete query which should reflect on tour
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+    this.r = await this.findOne().clone()
+    console.log(this.r, 'thats me')
+    next()
 })
 
-// calculating average rating on update and delete query which should reflect on tour
-// reviewSchema.pre(/^findOneAnd/, async function (next) {
-//     this.r = await this.findOne()
-//     console.log(this.r)
-//     next()
-// })
+reviewSchema.post(/^findOneAnd/, async function () {
+    await this.r.constructor.calculateAvgRating(this.r.tour)
+})
 
-// reviewSchema.post(/^findOneAnd/, async function () {
-//     // await this.r.constructor.calculateAvgRating(this.r.tour)
-
-// })
-
-
-reviewSchema.pre(/^find/, function(next) {
+reviewSchema.pre(/^find/, function (next) {
     this
-    // .populate({
-    //     path: 'tour',
-    //     select: 'difficulty'
-    // })
-    .populate({
-        path: 'user',
-        select: 'name photo'
-    })
+        // .populate({
+        //     path: 'tour',
+        //     select: 'difficulty'
+        // })
+        .populate({
+            path: 'user',
+            select: 'name photo'
+        })
     next()
+})
+
+reviewSchema.post('save', function () {
+    this.constructor.calculateAvgRating(this.tour)
 })
 const Review = mongoose.model('Review', reviewSchema)
 
