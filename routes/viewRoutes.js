@@ -12,8 +12,10 @@ const router = express.Router()
 // })
 
 router.get('/', authController.isLoggedIn, viewContorller.getOverview)
-router.get('/tour/:slug', authController.isLoggedIn, viewContorller.getTour)
+router.get('/tour/:slug', authController.protect, viewContorller.getTour)
 router.get('/login', authController.isLoggedIn, viewContorller.getLogIn)
 router.get('/me', authController.protect, viewContorller.getAccount)
+
+router.post('/update-user-setting', authController.protect, viewContorller.updateUser)
 
 module.exports = router  

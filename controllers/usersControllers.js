@@ -1,9 +1,44 @@
 const User = require("../models/userModel")
-
+const sharp = require("sharp")
+const multer = require('multer')
 const AppError = require("../utils/appError")
 const catchAsync = require("../utils/catchAsync")
 
 const handlerFactory = require("./../controllers/handlerFactory")
+
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'public/img/users')
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`)
+//   }
+// })
+
+const multerStorage = multer.memoryStorage()
+
+const multerFilter = (req, file, cb) => {
+  if(file.mimetype.startsWith('image')) {
+    cb(null, true)
+  } else {
+    cb(new AppError('Chooose correct filetype to upload an image',400))
+  }
+}
+
+exports.resizeImage = (req, res, next) => {
+  if(!req.file) next()
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`
+  sharp(req.file.buffer).resize(500, 500).toFormat('jpeg').jpeg({quality: 90}).toFile(`public/img/users/${req.file.filename}`);
+  next()
+}
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter
+})
+
+exports.uploadImage = upload.single('photo')
 
 const filterBody = (obj, ...fields) => {
   const newObj = {};
@@ -21,7 +56,8 @@ exports.getMe = (req, res, next) => {
 }
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-   
+  // console.log(req.file , req.body)
+  
   // 1> if user enterd password or passwordConfirm which should not be allowed 
   if(req.body.password || req.body.passwordConfirm){
     return next(new AppError('this route is not for password updation', 400))
@@ -32,6 +68,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   } else {
     filteredObj = filterBody( req.body, 'name', 'email')
   }
+
+  if(req.file.filename) filteredObj.photo = req.file.filename
+  console.log(filteredObj.photo)
   const update = await User.findByIdAndUpdate(req.user.id, filteredObj, {runValidators: true, new: true})
 
   res.status(200).json({

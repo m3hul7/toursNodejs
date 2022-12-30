@@ -205,7 +205,8 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 })
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
-    console.log(req.user)
+    // console.log(req.user)
+
     const user = await User.findOne({ email: req.user.email }).select('+password')
 
     if (!(await user.correctPassword(req.body.currentPassword, user.password))) {

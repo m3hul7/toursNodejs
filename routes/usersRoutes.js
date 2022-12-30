@@ -5,59 +5,20 @@ const authController = require("./../controllers/authControllers");
 
 const router = express.Router();
 
-router
-  .post(
-    '/sign-up',
-    authController.signup
-  )
-router
-  .post(
-    '/log-in',
-    authController.login
-  )
-router
-  .get(
-    '/log-out',
-    authController.logout
-  )
+router.post('/sign-up', authController.signup)
+router.post('/log-in', authController.login)
+router.get('/log-out', authController.logout)
 
-router
-  .post(
-    '/fortget-password',
-    authController.forgetPassword
-  )
-router
-  .patch(
-    '/reset-password/:token',
-    authController.resetPassword
-  )
+router.post('/fortget-password', authController.forgetPassword)
+router.patch('/reset-password/:token', authController.resetPassword)
 
 router.use(authController.protect)
 
-router
-  .patch(
-    '/update-password/',
-    authController.updatePassword
-  )
+router.patch('/update-password/', authController.updatePassword)
 
-router
-    .get(
-      '/get-me',
-      userController.getMe,
-      userController.getUser
-    )
-
-router
-  .patch(
-    '/update-me',
-    userController.updateMe
-  )
-
-router
-  .delete(
-    '/delete-me',
-    userController.deleteMe
-  )
+router.get('/get-me', userController.getMe, userController.getUser)
+router.patch('/update-me', userController.uploadImage, userController.resizeImage, userController.updateMe)
+router.delete('/delete-me', userController.deleteMe)
 
 router.use(authController.restrictTo('admin'))
 

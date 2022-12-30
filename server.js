@@ -25,6 +25,7 @@ const app = require("./app");
 console.log('node_env is',process.env.NODE_ENV, 'and server running on port' ,process.env.PORT);
 
 const port = process.env.port || 5555;
+// const server = app.listen(port , '172.16.3.107', () => {
 const server = app.listen(port , '127.0.0.1', () => {
   console.log("app started running...");
 });
